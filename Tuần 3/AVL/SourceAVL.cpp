@@ -26,8 +26,8 @@ int main() {
 
 	cout << endl;
 	if (isAVL(p) == true)
-		cout << "Cay da cho la cay nhi phan tim kiem" << endl;
+		cout << "Cay da cho la cay nhi phan tim kiem can bang" << endl;
 	else
-		cout << "Cay da cho khong la cay nhi phan tim kiem" << endl;
+		cout << "Cay da cho khong la cay nhi phan tim kiem khong can bang" << endl;
 	return 0;
 }
