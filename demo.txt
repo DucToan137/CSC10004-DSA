@@ -1,0 +1,180 @@
+
+create database QLDC_1
+
+
+go 
+use QLDC_1
+go
+
+create table PHUONG(
+	IDPhuong char(6),
+	TenPhuong nvarchar(50),
+	ChuTich char(6),
+	SoDThoai char(20),
+
+	primary key(IDPhuong)
+)
+
+create table TODANPHO(
+	IDPhuong char(6),
+	STTTo int,
+	Ten nvarchar(50),
+	ToTruong char(6),
+
+	primary key(IDPhuong,STTTo)
+)
+
+create table NGUOIDAN(
+	IDPhuong char(6),
+	IDNgDan char(6),
+	STTTo char(6),
+	HoTen nvarchar(50),
+	SoCMND int unique not NULL,
+	NgaySinh datetime,
+	GioiTinh nvarchar(10) check (GioiTinh in('Nam',N'Nữ')),
+	IDChuHo char(6),
+	
+	primary key(IDPhuong,IDNgDan)
+)
+
+--FK PHUONG(IDPhuong,ChuTich)-->NGUOIDAN(IDPhuong,IDNgDan)
+alter table PHUONG
+add constraint FK_P_ND
+foreign key (IDPhuong,ChuTich)
+references NGUOIDAN(IDPhuong,IDNgDan)
+--FK TODANPHO(IDPhuong)-->PHUONG(IDPhuong)
+alter table TODANPHO
+add constraint FK_DP_P
+foreign key (IDPhuong)
+references PHUONG(IDPhuong)
+--FK TODANPHO(IDPhuong,ToTruong)-->NGUOIDAN(IDPhuong,IDNgDan)
+alter table TODANPHO
+add constraint FK_DP_ND
+foreign key (IDPhuong,ToTruong)
+references NGUOIDAN(IDPhuong,IDNgDan)
+--FK NGUOIDAN(IDPhuong)-->PHUONG(IDPhuong)
+alter table NGUOIDAN
+add constraint FK_ND_P
+foreign key (IDPhuong)
+references PHUONG(IDPhuong)
+--FK NGUOIDAN(IDPhuong,IDChuHo)-->NGUOIDAN(IDPhuong,IDNgDan)
+alter table NGUOIDAN
+add constraint FK_ND_ND
+foreign key (IDPhuong,IDChuHo)
+references NGUOIDAN(IDPhuong,IDNgDan)
+
+--Nhap lieu
+
+insert into PHUONG values
+('P01',N'Phường Tân Hòa',NULL,NULL),
+('P02',N'Phường Phú Quý',NULL,NULL)
+
+insert into TODANPHO values
+('P01',1,N'Tổ 1,P1',NULL),
+('P01',2,N'Tổ 2,P1',NULL),
+('P02',2,N'Tổ 1,P2',NULL)
+
+insert into NGUOIDAN values 
+('P01','D02',1,'Mai',240674018,'4/3/1987',N'Nữ',NULL),
+('P01','D01',1,'Trang',240674027,'6/1/1978 ',N'Nữ',NULL),
+('P01','D03',2,'Quang',240674063,'6/12/1960 ','Nam',NULL),
+('P02','D01',2,N'Hùng',240674504,'8/7/1990','Nam',NULL),
+('P02','D02',2,N'Tùng',240674405,'1/23/1958','Nam',NULL),
+('P02','D03',2,N'Thủy',240674306,'10/12/1995',N'Nữ',NULL)
+
+update PHUONG
+set ChuTich = 'D01'
+where IDPhuong ='P01'
+
+update PHUONG
+set ChuTich ='D02'
+where IDPhuong='P02'
+
+update TODANPHO
+set ToTruong ='D01'
+where IDPhuong ='P01' and STTTo=1
+
+update TODANPHO
+set ToTruong ='D03'
+where IDPhuong ='P01' and STTTo=2
+
+update TODANPHO
+set ToTruong ='D03' -- D05
+where IDPhuong ='P02' and STTTo=2
+
+update NGUOIDAN 
+set IDChuHo ='D01'
+where IDPhuong ='P01' and IDNgDan ='D02'
+
+update NGUOIDAN 
+set IDChuHo ='D01'
+where IDPhuong ='P01' and IDNgDan ='D01'
+
+update NGUOIDAN 
+set IDChuHo ='D03'
+where IDPhuong ='P01' and IDNgDan ='D03'
+
+update NGUOIDAN 
+set IDChuHo ='D02'
+where IDPhuong ='P02' and IDNgDan ='D01'
+
+update NGUOIDAN 
+set IDChuHo ='D02'
+where IDPhuong ='P02' and IDNgDan ='D02'
+
+update NGUOIDAN 
+set IDChuHo ='D02'
+where IDPhuong ='P02' and IDNgDan ='D03'
+
+--Truy van
+
+--Cho biết (họ tên, tuổi) của các tổ trưởng ngoài 50 tuổi của Phường Tân Hòa.
+
+select D.HoTen, DATEDIFF(YY,D.NgaySinh,GETDATE()) as Tuoi
+from TODANPHO DP join NGUOIDAN D on DP.IDPhuong = D.IDPhuong
+join PHUONG P on P.IDPhuong = DP.IDPhuong
+where P.TenPhuong = N'Phường Tân Hòa' and D.IDNgDan=DP.ToTruong
+
+--Cho biết tên phường, tên chủ tịch phường, số lượng tổ của từng phường
+
+select P.IDPhuong, D.HoTen, count(P.IDPhuong) as SLTo
+from PHUONG P join TODANPHO DP on P.IDPhuong =DP.IDPhuong 
+join NGUOIDAN D on P.IDPhuong = D.IDPhuong
+where P.ChuTich = D.IDNgDan
+group by P.IDPhuong, D.HoTen
+
+--Cho danh sách các cư dân là tổ trưởng hoặc là chủ tịch phường
+
+select D.*
+from Phuong P join NGUOIDAN D on P.IDPhuong = D.IDPhuong
+where P.ChuTich = D.IDNgDan
+union
+select D.*
+from PHUONG P join NGUOIDAN D on P.IDPhuong =D.IDPhuong
+join TODANPHO T on P.IDPhuong = T.IDPhuong
+where T.ToTruong = D.IDNgDan
+
+--Cho biết (họ tên, tên tổ) của các tổ trưởng có giới tính nữ của Phường Tân Hòa
+select D.HoTen, D.STTTo
+from Phuong P join TODANPHO T on P.IDPhuong = T.IDPhuong
+join NGUOIDAN D on P.IDPhuong = D.IDPhuong
+where D.GioiTinh =N'Nữ' and D.IDNgDan = T.ToTruong and P.TenPhuong = N'Phường Tân Hòa'
+
+--Cho biết số tên tổ, tên tổ trưởng, số lượng cư dân của từng tổ thuộc Phường Phú Quý
+select count(T.STTTo) as SLDan
+from Phuong P join TODANPHO T on P.IDPhuong = T.IDPhuong
+join NGUOIDAN D on P.IDPhuong = D.IDPhuong
+--where P.TenPhuong = N'Phường Phú Quý' --and D.IDNgDan = T.ToTruong
+group by T.STTTo,P.TenPhuong
+having P.TenPhuong =N'Phường Phú Quý' 
+
+--Cho danh sách các cư dân chưa bao giờ làm chủ tịch phường
+
+select D.*
+from Phuong P join TODANPHO T on P.IDPhuong = T.IDPhuong
+join NGUOIDAN D on P.IDPhuong = D.IDPhuong
+except
+select D.*
+from Phuong P join TODANPHO T on P.IDPhuong = T.IDPhuong
+join NGUOIDAN D on P.IDPhuong = D.IDPhuong
+where P.ChuTich = D.IDNgDan
