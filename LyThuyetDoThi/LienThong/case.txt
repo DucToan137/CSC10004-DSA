@@ -1,0 +1,14 @@
+Dem so thanh phan lien thong
+10 8
+1 2
+2 3
+2 4
+3 6
+3 7
+6 7
+5 8
+8 9
+Cac dinh thuoc thanh phan lien thong thu 1: 1 2 3 6 7 4
+Cac dinh thuoc thanh phan lien thong thu 5: 5 8 9
+Cac dinh thuoc thanh phan lien thong thu 10: 10
+So thanh phan lien thong cua do thi: 3

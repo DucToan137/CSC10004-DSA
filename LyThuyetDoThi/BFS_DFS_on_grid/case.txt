@@ -1,0 +1,17 @@
+Bai 1
+6 6
+xxxooo
+ooxooo
+oxxxxo
+ooooox
+xxoxox
+xoxxox
+
+Bai 2
+6 6
+Aooxoo
+oxoooo
+oxoooo
+ooooxx
+Boooxo
+oooxxx
